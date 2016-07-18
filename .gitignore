@@ -24,6 +24,8 @@ bin
 # RunRules
 .maxcompiler-activity.be
 binaries
+debug
 dist
+include
 maxfiles
 objects
