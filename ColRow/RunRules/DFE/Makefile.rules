@@ -18,8 +18,8 @@ export ANT_MAXELER_INTERNAL_MAXIDE_JARS = $(subst :,;,$(MAXELER_INTERNAL_MAXIDE_
 # include custom definitions before including MAXCOMPILER include file
 include Makefile.settings
 
-IS_SIMULATION_PROFILE := 1
-IS_HARDWARE_PROFILE := 0
+IS_SIMULATION_PROFILE := 0
+IS_HARDWARE_PROFILE := 1
 
 ifeq ($(IS_SIMULATION_PROFILE),1)
   MAXELEROSDIR=$(MAXCOMPILERDIR)/lib/maxeleros-sim
@@ -62,7 +62,7 @@ include/MatVec.h: maxfiles/MatVec.h
 maxfiles/MatVec.max maxfiles/MatVec.h:
 # Ensure that maxfiles do not get build by this Makefile when running in MaxIDE
 ifndef MAXIDE_RUN
-	env  MAX_BUILDPARAMS=" DFEModel=VECTIS  target=DFE_SIM  maxFileName=MatVec "  ant -v -f MatVec.xml
+	test -f $@ || env  MAX_BUILDPARAMS=" DFEModel=VECTIS  target=DFE  maxFileName=MatVec MPPREndCT='4' "  ant -v -f MatVec.xml
 else
 	test -f $@ || ( echo 'Maxfile unavailable: $@' >/dev/stderr ; exit 1 )
 endif
@@ -70,10 +70,10 @@ endif
 
 
 startsim:
-	'$(MAXCOMPILERDIR)/bin/maxcompilersim' -n mul_socket -c VECTIS -d 1  restart
+		true
 
 stopsim:
-	'$(MAXCOMPILERDIR)/bin/maxcompilersim' -n mul_socket -c VECTIS -d 1  stop
+		true
 
 clean: clean-dist clean-objects clean-installers
 distclean: clean clean-maxfiles
