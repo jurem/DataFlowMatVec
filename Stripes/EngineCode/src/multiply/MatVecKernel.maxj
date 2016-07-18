@@ -1,0 +1,43 @@
+package multiply;
+
+import com.maxeler.maxcompiler.v2.kernelcompiler.Kernel;
+import com.maxeler.maxcompiler.v2.kernelcompiler.KernelParameters;
+import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.CounterChain;
+import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.memory.Memory;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEType;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
+import com.maxeler.maxcompiler.v2.utils.MathUtils;
+
+class MatVecKernel extends Kernel {
+
+	final DFEType valType = dfeFloat(8,24);
+
+	MatVecKernel(KernelParameters parameters, int maxMatSize, int stripeSize) {
+		super(parameters);
+
+		final int addrBits = MathUtils.bitsToAddress(maxMatSize + 1);
+		DFEType addrType = dfeUInt(addrBits);
+
+		DFEVar size = io.scalarInput("size", addrType);
+
+		CounterChain chain = control.count.makeCounterChain();
+		DFEVar s = chain.addCounter(size / stripeSize, 1);
+		DFEVar j = chain.addCounter(size, 1);
+		DFEVar i = chain.addCounter(stripeSize, 1);
+
+		DFEVar matA = io.input("matA", valType);
+
+		DFEVar vecRW = s === 0 & i === 0;
+		DFEVar vecB = io.input("vecB", valType, vecRW);
+		Memory<DFEVar> ram = mem.alloc(valType, maxMatSize);
+		ram.write(j, vecB, vecRW);
+
+		DFEVar carriedSum = valType.newInstance(this);
+		DFEVar sum = j === 0 ? 0.0 : carriedSum;
+		DFEVar vec = vecRW ? vecB : ram.read(j);
+		DFEVar newSum = sum + matA * vec;
+		carriedSum <== stream.offset(newSum, -stripeSize);
+
+		io.output("vecC", newSum, valType, j === size - 1);
+	}
+}

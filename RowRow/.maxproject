@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<maxCompilerManager version="2">
+<enginePart internalEngineSubproject="RowRow_EngineCode" isSrcBin="false" isUseDefaultSelected="false" outputLocation="/RowRow_EngineCode/bin" projectName="RowRow"/>
+<cpuPart internalCpuSubproject="RowRow_CPUCode"/>
+<watchedFiles/>
+</maxCompilerManager>

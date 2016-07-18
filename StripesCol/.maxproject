@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<maxCompilerManager version="2">
+<enginePart internalEngineSubproject="StripesCol_EngineCode" isSrcBin="false" isUseDefaultSelected="false" outputLocation="/StripesCol_EngineCode/bin" projectName="StripesCol"/>
+<cpuPart internalCpuSubproject="StripesCol_CPUCode"/>
+<watchedFiles/>
+</maxCompilerManager>

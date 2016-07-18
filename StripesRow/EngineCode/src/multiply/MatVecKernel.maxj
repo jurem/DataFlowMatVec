@@ -1,0 +1,54 @@
+package multiply;
+
+import maxpower.kernel.KernelBinaryOp.Add;
+import maxpower.utils.TreeReduce;
+
+import com.maxeler.maxcompiler.v2.kernelcompiler.Kernel;
+import com.maxeler.maxcompiler.v2.kernelcompiler.KernelParameters;
+import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.CounterChain;
+import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.memory.Memory;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEType;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVector;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVectorType;
+import com.maxeler.maxcompiler.v2.utils.MathUtils;
+
+class MatVecKernel extends Kernel {
+
+	final DFEType valType = dfeFloat(8,24);
+
+	MatVecKernel(KernelParameters parameters, int maxMatSize, int stripeSize, int pipeCount) {
+		super(parameters);
+
+		final DFEVectorType<DFEVar> vecType = new DFEVectorType<DFEVar>(valType, pipeCount);
+
+		final int addrBits = MathUtils.bitsToAddress(maxMatSize+1);
+		DFEType addrType = dfeUInt(addrBits);
+
+		DFEVar size = io.scalarInput("size", addrType);
+
+		CounterChain chain = control.count.makeCounterChain();
+		DFEVar s = chain.addCounter(size / stripeSize, 1);
+		DFEVar j = chain.addCounter(size / pipeCount, 1);
+		DFEVar i = chain.addCounter(stripeSize, 1);
+
+		DFEVector<DFEVar> matA = io.input("matA", vecType);
+
+		DFEVar vecRW = s === 0 & i === 0;
+		DFEVector<DFEVar> vecB = io.input("vecB", vecType, vecRW);
+		Memory<DFEVector<DFEVar>> ram = mem.alloc(vecType, maxMatSize);
+		ram.write(j, vecB, vecRW);
+
+		DFEVector<DFEVar> carriedSum = vecType.newInstance(this);
+		DFEVector<DFEVar> sum = j === 0 ? constant.vect(pipeCount, 0.0) : carriedSum;
+		DFEVector<DFEVar> vec = vecRW ? vecB : ram.read(j);
+		DFEVector<DFEVar> newSum = sum + matA * vec;
+		carriedSum <== stream.offset(newSum, -stripeSize);
+
+		DFEVar[] summands = new DFEVar[pipeCount];
+		for(int k=0; k < pipeCount; k++) summands[k] = newSum[k];
+		DFEVar vecC = TreeReduce.reduce(new Add<DFEVar>(), summands);
+
+		io.output("vecC", vecC, valType, j === size / pipeCount - 1);
+	}
+}

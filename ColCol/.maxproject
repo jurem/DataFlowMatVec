@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<maxCompilerManager version="2">
+<enginePart internalEngineSubproject="ColRow_EngineCode" isSrcBin="false" isUseDefaultSelected="false" outputLocation="/ColRow_EngineCode/bin" projectName="ColCol"/>
+<cpuPart internalCpuSubproject="ColRow_CPUCode"/>
+<watchedFiles/>
+</maxCompilerManager>

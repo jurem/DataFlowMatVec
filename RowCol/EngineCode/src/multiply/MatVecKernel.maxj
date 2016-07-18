@@ -1,0 +1,52 @@
+package multiply;
+
+import com.maxeler.maxcompiler.v2.kernelcompiler.Kernel;
+import com.maxeler.maxcompiler.v2.kernelcompiler.KernelParameters;
+import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.CounterChain;
+import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Stream.OffsetExpr;
+import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.memory.Memory;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEType;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVector;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVectorType;
+import com.maxeler.maxcompiler.v2.utils.MathUtils;
+
+class MatVecKernel extends Kernel {
+
+	final DFEType valType = dfeFloat(8, 24);
+
+	MatVecKernel(KernelParameters parameters, int maxMatSize, int pipeCount) {
+		super(parameters);
+
+		final DFEVectorType<DFEVar> vecType = new DFEVectorType<DFEVar>(valType, pipeCount);
+
+		final int addrBits = MathUtils.bitsToAddress(maxMatSize + 1);
+		DFEType addrType = dfeUInt(addrBits);
+
+		DFEVar size = io.scalarInput("size", addrType);
+
+		OffsetExpr loopLength = stream.makeOffsetAutoLoop("loopLength");
+		DFEVar loopLengthVal = loopLength.getDFEVar(this, dfeUInt(8));
+
+		CounterChain chain = control.count.makeCounterChain();
+		DFEVar i = chain.addCounter(size, pipeCount);
+		DFEVar j = chain.addCounter(size, 1);
+		DFEVar loopCounter = chain.addCounter(loopLengthVal, 1);
+
+		DFEVector<DFEVar> matA = io.input("matA", vecType, loopCounter === 0);
+
+		DFEVar vecRW = i === 0 & loopCounter === 0;
+		DFEVar vecB = io.input("vecB", valType, vecRW);
+		Memory<DFEVar> ram = mem.alloc(valType, maxMatSize);
+		ram.write(j, vecB, vecRW);
+
+
+		DFEVector<DFEVar> carriedSum = vecType.newInstance(this);
+		DFEVector<DFEVar> sum = j === 0 ? constant.vect(pipeCount, 0.0) : carriedSum;
+		DFEVar vec = vecRW ? vecB : ram.read(j);
+		DFEVector<DFEVar> newSum = sum + matA * vec;
+		carriedSum <== stream.offset(newSum, -loopLength);
+
+		io.output("vecC", newSum, vecType, (j === size - 1) & (loopCounter === loopLengthVal - 1));
+	}
+}

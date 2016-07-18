@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <getopt.h>
 
 #include <MaxSLiCInterface.h>
 #include "Maxfiles.h"
@@ -16,7 +15,7 @@ int main(int argc, char * argv[]) {
 	INIT_MATVEC;
 
 	mat_t matAT = mat_make(size, size);
-	mat_transpose(size, size, matA, matAT);
+	mat_transform_rowstripes(size, size, MatVec_STRIPE_SIZE, matA, matAT);
 	MatVec(size, matAT, vecB, vecC);
 	free(matAT);
 

@@ -1,0 +1,47 @@
+package multiply;
+
+import com.maxeler.maxcompiler.v2.build.EngineParameters;
+import com.maxeler.maxcompiler.v2.kernelcompiler.Kernel;
+import com.maxeler.maxcompiler.v2.managers.engine_interfaces.CPUTypes;
+import com.maxeler.maxcompiler.v2.managers.engine_interfaces.EngineInterface;
+import com.maxeler.maxcompiler.v2.managers.engine_interfaces.InterfaceParam;
+import com.maxeler.maxcompiler.v2.managers.standard.Manager;
+import com.maxeler.maxcompiler.v2.managers.standard.Manager.IOType;
+
+
+class MatVecManager{
+
+	static final int MAX_MAT_SIZE = 20 * 1024;
+	static final int STRIPE_SIZE = 32;
+	static final int PIPE_COUNT = 2;
+
+	public static void main(String[] args) {
+		Manager manager = new Manager(new EngineParameters(args));
+		Kernel kernel = new MatVecKernel(manager.makeKernelParameters(), MAX_MAT_SIZE, STRIPE_SIZE, PIPE_COUNT);
+		manager.setKernel(kernel);
+		manager.setIO(IOType.ALL_CPU);
+		manager.createSLiCinterface(interfaceDefault());
+
+		manager.addMaxFileConstant("MAX_MAT_SIZE", MAX_MAT_SIZE);
+		manager.addMaxFileConstant("STRIPE_SIZE", STRIPE_SIZE);
+		manager.addMaxFileConstant("PIPE_COUNT", PIPE_COUNT);
+		manager.build();
+	}
+
+	private static EngineInterface interfaceDefault() {
+		EngineInterface ei = new EngineInterface();
+
+		InterfaceParam size = ei.addParam("size", CPUTypes.INT);
+		InterfaceParam matSize = size * size;
+		InterfaceParam matSizeBytes = matSize * CPUTypes.FLOAT.sizeInBytes();
+		InterfaceParam vecSizeBytes = size * CPUTypes.FLOAT.sizeInBytes();
+
+		ei.setScalar("MatVecKernel", "size", size);
+		ei.setStream("matA", CPUTypes.FLOAT, matSizeBytes);
+		ei.setStream("vecB", CPUTypes.FLOAT, vecSizeBytes);
+		ei.setStream("vecC", CPUTypes.FLOAT, vecSizeBytes);
+
+		ei.setTicks("MatVecKernel", matSize / PIPE_COUNT);
+		return ei;
+	}
+}
