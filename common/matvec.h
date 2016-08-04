@@ -12,9 +12,8 @@ int help_flag = 0;
 int size = 64;
 
 /* tracing
-	0 - prints only n, sum of result, realtime, cputime
+	0 - prints only n, sum of result, correctness, realtime, cputime
 	1 - prints input, output, final result
-	2 - tests correctness of result and prints if test passed
 */
 int trace = 0;
 
@@ -76,17 +75,8 @@ void parse_args(int argc, char * argv[]) {
 }
 
 
-int check_outputs(int n, float * mat, float * vec, float * out) {
-	float *expected = vec_make(n);
-	mul_matvec(n, n, mat, vec, expected);
-	int status = vec_check(n, out, expected, trace >= 1);
-	free(expected);
-	return status;
-}
-
-
-void trace_inputs(int n, float * mat, float * vec) {
-	if (trace < 2) return;
+void trace_inputs(size_t n, mat_t mat, vec_t vec) {
+	if (trace < 1) return;
 	printf("\nInput matrix\n");
 	mat_print(n, n, mat);
 	printf("\nInput vector\n");
@@ -94,10 +84,19 @@ void trace_inputs(int n, float * mat, float * vec) {
 }
 
 
-void trace_outputs(int n, float * out) {
+void trace_outputs(size_t n, vec_t out) {
 	if (trace < 2) return;
 	printf("\nOutput vector\n");
 	vec_print(n, out);
+}
+
+
+int check_outputs(size_t n, mat_t mat, vec_t vec, vec_t out) {
+	float *expected = vec_make(n);
+	mul_matvec(n, n, mat, vec, expected);
+	int status = vec_check(n, out, expected, trace >= 1);
+	free(expected);
+	return status;
 }
 
 
@@ -122,7 +121,7 @@ void trace_outputs(int n, float * out) {
 \
 	trace_outputs(size, vecC); \
 \
-	float sum = vec_sum(size, vecC); \
+	float sum = vec_sumall(size, vecC); \
 	char* status = check_outputs(size, matA, vecB, vecC) ? "ok" : "err"; \
 	printf("%d %f %s %ld %ld\n", size, sum, status, timer1.realtime, timer1.cputime); \
 \
