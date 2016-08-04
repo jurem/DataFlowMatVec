@@ -107,6 +107,11 @@ float mat_sumall(size_t n, size_t m, mat_t mat) {
 }
 
 
+char mat_check(size_t n, size_t m, mat_t matA, mat_t matB, char trace) {
+	return vec_check(n * m, matA, matB, trace);
+}
+
+
 void mat_transpose(size_t n, size_t m, mat_t src, mat_t dst){
 	for (size_t i = 0; i < n; i++)
 		for (size_t j = 0; j < m; j++)

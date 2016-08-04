@@ -11,7 +11,7 @@ RUNRULE_MAXFILES_H  := MatVec.h
 RUNRULE_CFLAGS      := 
 RUNRULE_LDFLAGS     := 
 
-TARGET_EXEC         := ColSumHw
+TARGET_EXEC         := MatVec
 TARGET_LIBRARY      := 
 
 
