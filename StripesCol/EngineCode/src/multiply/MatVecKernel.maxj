@@ -6,8 +6,6 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.CounterChain;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.memory.Memory;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEType;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
-import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVector;
-import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVectorType;
 import com.maxeler.maxcompiler.v2.utils.MathUtils;
 
 class MatVecKernel extends Kernel {
@@ -16,8 +14,6 @@ class MatVecKernel extends Kernel {
 
 	MatVecKernel(KernelParameters parameters, int maxMatSize, int stripeSize, int pipeCount) {
 		super(parameters);
-
-		final DFEVectorType<DFEVar> vecType = new DFEVectorType<DFEVar>(valType, pipeCount);
 
 		final int addrBits = MathUtils.bitsToAddress(maxMatSize + 1);
 		DFEType addrType = dfeUInt(addrBits);
@@ -29,19 +25,21 @@ class MatVecKernel extends Kernel {
 		DFEVar j = chain.addCounter(size, 1);
 		DFEVar i = chain.addCounter(stripeSize / pipeCount, 1);
 
-		DFEVector<DFEVar> matA = io.input("matA", vecType);
-
 		DFEVar vecRW = s === 0 & i === 0;
 		DFEVar vecB = io.input("vecB", valType, vecRW);
 		Memory<DFEVar> ram = mem.alloc(valType, maxMatSize);
 		ram.write(j, vecB, vecRW);
 
-		DFEVector<DFEVar> carriedSum = vecType.newInstance(this);
-		DFEVector<DFEVar> sum = j === 0 ? constant.vect(pipeCount, 0.0) : carriedSum;
-		DFEVar vec = vecRW ? vecB : ram.read(j);
-		DFEVector<DFEVar> newSum = sum + matA * vec;
-		carriedSum <== stream.offset(newSum, -stripeSize / pipeCount);
+		for (int p = 0; p < pipeCount; p++) {
+			DFEVar matA = io.input("matA", valType);
 
-		io.output("vecC", newSum, vecType, j === size - 1);
+			DFEVar carriedSum = valType.newInstance(this);
+			DFEVar sum = j === 0 ? 0 : carriedSum;
+			DFEVar vec = vecRW ? vecB : ram.read(j);
+			DFEVar newSum = sum + matA * vec;
+			carriedSum <== stream.offset(newSum, -stripeSize / pipeCount);
+
+			io.output("vecC", newSum, valType, j === size - 1);
+		}
 	}
 }

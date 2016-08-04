@@ -1,7 +1,6 @@
 package multiply;
 
-import maxpower.kernel.KernelBinaryOp.Add;
-import maxpower.utils.TreeReduce;
+import maxpower.kernel.arithmetic.FloatingPointMultiAdder;
 
 import com.maxeler.maxcompiler.v2.kernelcompiler.Kernel;
 import com.maxeler.maxcompiler.v2.kernelcompiler.KernelParameters;
@@ -39,7 +38,7 @@ class MatVecKernel extends Kernel {
 
 		DFEVar[] summands = new DFEVar[pipeCount];
 		for (int k = 0; k < pipeCount; k++) summands[k] = newSum[k];
-		DFEVar vecC = TreeReduce.reduce(new Add<DFEVar>(), summands);
+		DFEVar vecC = FloatingPointMultiAdder.add(summands);
 
 		io.output("vecC", vecC, valType, j === size / pipeCount - 1);
 	}
