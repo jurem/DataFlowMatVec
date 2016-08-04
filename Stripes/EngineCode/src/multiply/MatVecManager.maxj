@@ -12,7 +12,7 @@ import com.maxeler.maxcompiler.v2.managers.standard.Manager.IOType;
 class MatVecManager{
 
 	static final int MAX_MAT_SIZE = 20 * 1024;
-	static final int STRIPE_SIZE = 16; // >= 16
+	static final int STRIPE_SIZE = 32; // >= 16
 
 	public static void main(String[] args) {
 		Manager manager = new Manager(new EngineParameters(args));

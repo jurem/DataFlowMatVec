@@ -2,4 +2,4 @@
 # This file is managed by MaxIDE. Do NOT change.
 #
 HEADERS:= common/common.h common/matrix.h common/matvec.h common/rand.h common/timer.h 
-SOURCES:= RowRowCpuCode.c common/common.c 
+SOURCES:= RowRowCpuCode.c 

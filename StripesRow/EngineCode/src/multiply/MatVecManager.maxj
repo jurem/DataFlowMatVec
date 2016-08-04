@@ -13,7 +13,7 @@ class MatVecManager{
 
 	static final int MAX_MAT_SIZE = 20 * 1024;
 	static final int STRIPE_SIZE = 32;
-	static final int PIPE_COUNT = 32;
+	static final int PIPE_COUNT = 2;
 
 	public static void main(String[] args) {
 		Manager manager = new Manager(new EngineParameters(args));
