@@ -1,6 +1,8 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
+#include <stdlib.h>
+#include <math.h>
 
 #include "rand.h"
 
@@ -53,7 +55,7 @@ elt_t vec_sumall(size_t n, vec_t vec) {
 
 char vec_equals(size_t n, vec_t vecA, vec_t vecB) {
 	for (size_t i = 0; i < n; i++)
-		if (abs(vecA[i] - vecB[i]) > PRECISION) return 0;
+		if (fabs(vecA[i] - vecB[i]) > PRECISION) return 0;
 	return 1;
 }
 
@@ -61,7 +63,7 @@ char vec_equals(size_t n, vec_t vecA, vec_t vecB) {
 char vec_check(size_t n, vec_t vecA, vec_t vecB, char trace) {
 	char status = 1;
 	for (size_t i = 0; i < n; i++)
-		if (abs(vecA[i] - vecB[i]) > PRECISION) {
+		if (fabs(vecA[i] - vecB[i]) > PRECISION) {
 			if (trace) fprintf(stderr, "[%ld] error, output: %f != expected: %f\n", i, vecA[i], vecB[i]);
 			status = 0;
 		}

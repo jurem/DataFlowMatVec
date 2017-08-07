@@ -1,9 +1,9 @@
-CCFLAGS	:= -O3 -std=c99
+CCFLAGS	:= -O3 -std=c99 -march=native
 
 all: matvec
 
 
-matvec: matvec.c common.o
+matvec: matvec.c
 	$(CC) $(CCFLAGS) $^ -o $@
 
 

@@ -19,7 +19,7 @@ test -f "$logfile" && exit
 for ((n = 1024; n <= 16384; n += 1024)); do
 	for ((r = 0; r < $repeat; r++)); do
 		sleep $pause
-		"$exe" -n $n 2>&1 | tee -a "$logfile"
+		"$exe" -n $n -s $RANDOM 2>&1 | tee -a "$logfile"
 	done
 done
 

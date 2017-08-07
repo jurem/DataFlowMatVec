@@ -8,14 +8,17 @@
 // show help
 int help_flag = 0;
 
-// number of rows / columns. Matrix size is n*n
-int size = 64;
-
 /* tracing
 	0 - prints only n, sum of result, correctness, realtime, cputime
 	1 - prints input, output, final result
 */
 int trace = 0;
+
+// seed for random numbers
+int seed = 0;
+
+// number of rows / columns. Matrix size is size * size
+size_t size = 64;
 
 // elements of matrix are in -range  to +range interval
 float range = 100.0;
@@ -25,22 +28,23 @@ void help(const char * cmd) {
     printf("Usage: %s [filename]\n", cmd);
     printf("\nOptions:\n");
     printf("  -h, --help\n\tPrint short help\n");
+    printf("  -t, --trace\n\tTrace level: 0,1,2\n");
+    printf("  -s, --seed\n\tSeed for random numbers\n");
     printf("  -n, --size\n\tSize n of matrix\n");
     printf("  -r, --range\n\tRange of elements\n");
-    printf("  -t, --trace\n\tTrace level: 0,1,2\n");
-
 };
 
 
 struct option options[] = {
 	{ "help",	required_argument, 0, 'h' },
-	{ "size",	required_argument, 0, 'n' },
 	{ "trace",	required_argument, 0, 't' },
+	{ "seed",	required_argument, 0, 's' },
+	{ "size",	required_argument, 0, 'n' },
 	{ "range",	required_argument, 0, 'r' },
 	{ 0, 0, 0, 0 }
 };
 
-#define SHORTOPT "hn:t:r:"
+#define SHORTOPT "ht:n:r:s:"
 
 
 void parse_args(int argc, char * argv[]) {
@@ -53,11 +57,14 @@ void parse_args(int argc, char * argv[]) {
 			case 'h':
 				help_flag = 1;
 				break;
-			case 'n':
-				size = atoi(optarg);
-				break;
 			case 't':
 				trace = atoi(optarg);
+				break;
+			case 's':
+				seed = atoi(optarg);
+				break;
+			case 'n':
+				size = atoi(optarg);
 				break;
 			case 'r':
 				range = atoi(optarg);
@@ -76,7 +83,7 @@ void parse_args(int argc, char * argv[]) {
 
 
 void trace_inputs(size_t n, mat_t mat, vec_t vec) {
-	if (trace < 1) return;
+	if (trace < 2) return;
 	printf("\nInput matrix\n");
 	mat_print(n, n, mat);
 	printf("\nInput vector\n");
@@ -101,8 +108,11 @@ int check_outputs(size_t n, mat_t mat, vec_t vec, vec_t out) {
 
 
 #define INIT_MATVEC \
+	if (trace > 0) printf("Init ... \n"); \
 	if (argc > 1) parse_args(argc, argv); \
+	rand_init(seed); \
 \
+	if (trace > 0) printf("Generating inputs ... \n"); \
 	mat_t matA = mat_make(size, size); \
 	mat_t vecB = vec_make(size); \
 	mat_t vecC = vec_make(size); \
@@ -112,8 +122,10 @@ int check_outputs(size_t n, mat_t mat, vec_t vec, vec_t out) {
 \
 	trace_inputs(size, matA, vecB); \
 \
+	if (trace > 0) printf("Benchmarking ... \n"); \
 	timing_t timer1; \
 	timer_start(&timer1);
+//	for (int _c = 0; _c < count; _c++) {
 
 
 #define DONE_MATVEC \
@@ -121,10 +133,12 @@ int check_outputs(size_t n, mat_t mat, vec_t vec, vec_t out) {
 \
 	trace_outputs(size, vecC); \
 \
+	if (trace > 0) printf("Checking the results ... \n"); \
 	float sum = vec_sumall(size, vecC); \
 	char* status = check_outputs(size, matA, vecB, vecC) ? "ok" : "err"; \
-	printf("%d %f %s %ld %ld\n", size, sum, status, timer1.realtime, timer1.cputime); \
+	printf("%ld %f %s %ld %ld\n", size, sum, status, timer1.realtime, timer1.cputime); \
 \
+	if (trace > 0) printf("Done ... \n"); \
 	free(matA); \
 	free(vecB); \
 	free(vecC); \

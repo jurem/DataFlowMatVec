@@ -1,7 +1,3 @@
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-
 #include <MaxSLiCInterface.h>
 #include "Maxfiles.h"
 
