@@ -4,10 +4,20 @@ source libprepare.sh
 
 
 cd ..
+src_prjs="RowRow RowCol ColRow ColCol"
+
+
+function list {
+	for p in $src_prjs; do
+		for c in 2 4 8 16 32; do
+			dst=${p}P$c
+			echo $dst
+		done
+	done
+}
 
 
 function prepare {
-	src_prjs="RowRow RowCol ColRow ColCol"
 	for p in $src_prjs; do
 		for c in 2 4 8 16 32; do
 			src=$p
@@ -19,7 +29,6 @@ function prepare {
 
 
 function makeall {
-	src_prjs="RowRow RowCol ColRow ColCol"
 	for p in $src_prjs; do
 		for c in 2 4 8 16 32; do
 			dst=${p}P$c
