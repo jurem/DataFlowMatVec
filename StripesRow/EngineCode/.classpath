@@ -7,6 +7,6 @@
 			<attribute name="javadoc_location" value="file:/opt/maxeler/maxcompiler/docs/MaxCompiler-API/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/maxpower-master"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/maxpower"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
