@@ -9,7 +9,7 @@
 // ********** type of elements ***********
 
 
-#define PRECISION	0.01
+#define PRECISION	0.1
 
 
 typedef float elt_t;
