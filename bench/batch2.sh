@@ -5,12 +5,12 @@ source libprepare.sh
 
 cd ..
 src_prjs="Stripes"
-stripe_cnts="64 128 256 512"
+stripe_cnts="32 64 128 256 512"
 
 function list {
 	for p in $src_prjs; do
 		for c in $stripe_cnts; do
-			dst=${p}P$c
+			dst=${p}$c
 			echo $dst
 		done
 	done
@@ -21,7 +21,7 @@ function prepare {
 	for p in $src_prjs; do
 		for c in $stripe_cnts; do
 			src=$p
-			dst=${p}P$c
+			dst=${p}$c
 			cp_prj $src $dst && set_stripes $dst $c
 		done
 	done
